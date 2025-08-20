@@ -7,47 +7,97 @@ tiny-panda is a lightweight JavaScript library inspired by Python’s pandas.
 It provides a simple, intuitive API for working with tabular data in the browser or Node.js.
 </div>
 
+---
 
 ##  Features
-Easy-to-use DataFrame and Series objects
+- Easy-to-use DataFrame and Series objects
+- Data filtering, selection, and transformation
+- Basic statistics and summary methods
+- Import/export to JSON and CSV
+- Familiar pandas-like syntax
 
-Data filtering, selection, and transformation
-
-Basic statistics and summary methods
-
-Import/export to JSON and CSV
-
-Familiar pandas-like syntax
+---
 
 ## Installation
 ```
 npm install tiny-panda
 ```
 
+---
+
 ## Usage
 ```
 import { DataFrame } from "tiny-panda";
 
-const df = new DataFrame({
+// you can use it as an object containing arrays
+
+const data_obj = {
   A: [1, 2, 3],
   B: [4, 5, 6],
-});
+};
 
-df.print();
-// A  B
-// 1  4
-// 2  5
-// 3  6
+const df_from_obj = new DataFrame(data_obj);
+
+// or like an array of objects
+
+const data_arr = [
+  { a: 1, b: 4 },
+  { a: 2, b: 5 },
+  { a: 3, b: 6 }
+];
+
+const df_from_arr = new DataFrame(data_arr);
+
+df_from_arr.print();
+console.log(df_from_arr.head(2).toString());
+console.log(df_from_arr.mean());
 ```
+---
 
 ## Roadmap
 
-More pandas-like methods (groupBy, merge, pivot)
+#### Implemented (Core Features)
 
-File readers (CSV, Excel, Parquet)
+constructor(data) → create DataFrame from array of objects or object of arrays.
 
-Performance optimizations
+head(n) / tail(n) → preview first/last n rows.
+
+mean(k) → compute mean for a column or all columns.
+
+print() / toString() → display DataFrame.
+
+tail(n) → return last n rows.
+
+#### Soon (Next Level Features)
+
+sum(k), min(k), max(k) → basic statistics.
+
+shape → get [rows, columns].
+
+columns → get column names.
+
+iloc(rowIndex, colIndex) → positional selection of values.
+
+apply(func) → apply a function to column(s) or row(s).
+
+#### Future / Advanced Features
+
+Add / drop columns (df["new"] = ..., df.drop("col")).
+
+Rename columns (df.rename({ old: new })).
+
+Sorting (df.sortBy("col")).
+
+Filtering / boolean indexing (df[df["a"].values.map(x => x > 2)]).
+
+Merge / join / concat multiple DataFrames.
+
+Handling missing values (fillna(), dropna()).
+
+GroupBy / aggregation (df.groupby("col").mean()).
+
+---
 
 ## License
 
-MIT License
+**MIT License**
