@@ -103,6 +103,29 @@ export class DataFrame {
     return new DataFrame(result);
   }
 
+
+  /**
+   * Compute the sum of a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes sum for all columns.
+   * @returns The mean of the column if `k` is given, or an object mapping column → sum otherwise.
+   * @throws If column does not exist.
+   */
+  sum(k: string | null = null): number | Record<string, number> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].sum();
+    } else {
+      const sums: Record<string, number> = {};
+      for (const key in this.columns) {
+        sums[key] = this.columns[key].sum();
+      }
+      return sums;
+    }
+  }
+
   /**
    * Compute the mean of a specific column, or of all numeric columns.
    *
