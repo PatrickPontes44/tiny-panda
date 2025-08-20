@@ -1,0 +1,21 @@
+{
+  "name": "tiny-panda",
+  "version": "1.0.0",
+  "description": "tiny-panda is a lightweight JavaScript library inspired by Python’s pandas. It provides a simple, intuitive API for working with tabular data in the browser or Node.js.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PatrickPontes44/tiny-panda.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PatrickPontes44/tiny-panda/issues"
+  },
+  "homepage": "https://github.com/PatrickPontes44/tiny-panda#readme"
+}
