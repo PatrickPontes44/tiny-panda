@@ -70,8 +70,6 @@ tail(n) → return last n rows.
 
 #### Soon (Next Level Features)
 
-sum(k), min(k), max(k) → basic statistics.
-
 shape → get [rows, columns].
 
 columns → get column names.
