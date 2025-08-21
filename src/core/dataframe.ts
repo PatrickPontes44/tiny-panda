@@ -127,6 +127,50 @@ export class DataFrame {
   }
 
   /**
+   * Compute the maximum value in a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes max for all columns.
+   * @returns The max of the column if `k` is given, or an object mapping column → max otherwise.
+   * @throws If column does not exist.
+  */
+  max(k: string | null = null): number | Record<string, number> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].max();
+    } else {
+      const maxes: Record<string, number> = {};
+      for (const key in this.columns) {
+        maxes[key] = this.columns[key].max();
+      }
+      return maxes;
+    }
+  }
+
+  /**
+   * Compute the minimum value in a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes min for all columns.
+   * @returns The min of the column if `k` is given, or an object mapping column → min otherwise.
+   * @throws If column does not exist.
+  */
+  min(k: string | null = null): number | Record<string, number> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].min();
+    } else {
+      const mins: Record<string, number> = {};
+      for (const key in this.columns) {
+        mins[key] = this.columns[key].min();
+      }
+      return mins;
+    }
+  }
+
+  /**
    * Compute the mean of a specific column, or of all numeric columns.
    *
    * @param k - Column name. If null, computes means for all columns.

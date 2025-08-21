@@ -41,6 +41,24 @@ export class Series {
   }
 
   /**
+   * Compute the maximum value in the Series.
+   * @returns The maximum value in the Series.
+   * @throws Will throw if values are not comparable.
+  */
+  max(): number {
+    return Math.max(...this.values);
+  }
+
+  /**
+   * Compute the minimum value in the Series.
+   * @returns The minimum value in the Series.
+   * @throws Will throw if values are not comparable.
+  */
+  min(): number {
+    return Math.min(...this.values);
+  }
+
+  /**
    * Compute the mean (average) of all numeric values in the Series.
    * @returns The mean of the Series values.
    * @throws Will throw if values are not numeric.
