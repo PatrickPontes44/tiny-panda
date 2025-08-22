@@ -56,18 +56,6 @@ console.log(df_from_arr.mean());
 
 ## Roadmap
 
-#### Implemented (Core Features)
-
-constructor(data) → create DataFrame from array of objects or object of arrays.
-
-head(n) / tail(n) → preview first/last n rows.
-
-mean(k) → compute mean for a column or all columns.
-
-print() / toString() → display DataFrame.
-
-tail(n) → return last n rows.
-
 #### Soon (Next Level Features)
 
 shape → get [rows, columns].
