@@ -103,6 +103,40 @@ export class DataFrame {
     return new DataFrame(result);
   }
 
+  /**
+   * Get the number of rows in the DataFrame.
+   * @returns The number of rows (length of the first column).
+  */
+  length(): number {
+    const firstKey = Object.keys(this.columns)[0];
+    return firstKey ? this.columns[firstKey].length() : 0;
+  }
+
+  /**
+   * Get the number of columns in the DataFrame.
+   * @returns The number of columns.
+  */
+  numColumns(): number {
+    return Object.keys(this.columns).length;
+  }
+
+  /**
+   * Get the names of all columns in the DataFrame.
+   * @returns An array of column names.
+  */
+  columnNames(): string[] {
+    return Object.keys(this.columns);
+  }
+
+  /**
+   * Get the shape of the DataFrame as [rows, columns].
+   * @returns A tuple with the number of rows and columns.
+   */
+  shape(): [number, number] {
+    const numRows = this.length();
+    const numCols = Object.keys(this.columns).length;
+    return [numRows, numCols];
+  }
 
   /**
    * Compute the sum of a specific column, or of all numeric columns.
@@ -194,23 +228,29 @@ export class DataFrame {
 
   /**
    * Convert the DataFrame to a string representation.
-   * @returns A table-like string with headers and rows.
-   */
-  toString(): string {
+   * Pretty-print the DataFrame as a table with headers and rows.
+  */
+  printTable() {
     const keys = Object.keys(this.columns);
-    const rows: string[] = [];
-
+    const colWidths: Record<string, number> = {};
+    for (const k of keys) {
+      const values = this.columns[k].values.map(v => String(v));
+      const maxValLen = values.reduce((max, v) => Math.max(max, v.length), 0);
+      colWidths[k] = Math.max(k.length, maxValLen);
+    }
+    let rows: string = '';
+    rows += keys.map(k => k.padEnd(colWidths[k], ' ')).join(' | ') + "\n";
+    rows += keys.map(k => '-'.repeat(colWidths[k])).join('-|-') + "\n";
     const length = this.columns[keys[0]].values.length;
     for (let i = 0; i < length; i++) {
-      rows.push(keys.map(k => this.columns[k].values[i]).join(" | "));
+      rows += keys.map(k => String(this.columns[k].values[i]).padEnd(colWidths[k], ' ')).join(' | ') + "\n";
     }
-
-    return keys.join(" | ") + "\n" + rows.join("\n");
+    console.log(rows);
   }
   
   /**
    * Pretty-print the DataFrame using `console.table`.
-   */
+  */
   print(): void {
     console.table(this.columns);
   }
