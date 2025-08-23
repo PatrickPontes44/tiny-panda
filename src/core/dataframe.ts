@@ -139,6 +139,78 @@ export class DataFrame {
   }
 
   /**
+   * Get basic information about the DataFrame.
+   * @returns An object containing number of rows, columns, column names, and estimated memory usage.
+  */
+  info(): { rows: number; columns: number; columnNames: string[]; estimatedMemoryUsage: string } {
+    const rows = this.length();
+    const columns = this.numColumns();
+    const columnNames = this.columnNames();
+    const estimatedMemoryUsage = `${(rows * columns * 8) / 1024} KB`;
+    return { rows, columns, columnNames, estimatedMemoryUsage };
+  }
+
+  /**
+   * Get descriptive statistics for all numeric columns in the DataFrame.
+   * @returns An object mapping column names to their descriptive statistics.
+   */
+  describe(k: string | null = null): Record<string, any> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return { [k]: this.columns[k].describe() };
+    } else {
+      return {
+        max: this.max(),
+        min: this.min(),
+        sum: this.sum(),
+        mean: this.mean(),
+        median: this.median(),
+        mode: this.mode(),
+      };
+    }
+  }
+
+  /**
+   * @param k - Column name. If null, compute the uniques for all columns.
+   * @returns The unique values of the column if `k` is given, or an object mapping column → unique otherwise.
+   * @throws If column does not exist.
+   */
+  unique(k: string): Record<string, Series> | Series {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].unique();
+    }
+    const result: Record<string, Series> = {};
+    for (const col in this.columns) {
+      result[col] = this.columns[col].unique();
+    }
+    return result;
+  }
+
+  /**
+   * @param k - Column name. If null, compute the valueCounts for all columns.
+   * @param desc - whether to sort descending (default true)
+   * @returns The value counts of the column if `k` is given, or an object mapping column → counts otherwise.
+   */
+  valueCounts(k: string, desc: boolean = true): Record<string, Record<any, number>> | Record<any, number> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].valueCounts(desc);
+    }
+    const result: Record<string, Record<any, number>> = {};
+    for (const col in this.columns) {
+      result[col] = this.columns[col].valueCounts(desc);
+    }
+    return result;
+  }
+
+  /**
    * Compute the sum of a specific column, or of all numeric columns.
    *
    * @param k - Column name. If null, computes sum for all columns.
@@ -151,13 +223,12 @@ export class DataFrame {
         throw new Error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].sum();
-    } else {
-      const sums: Record<string, number> = {};
-      for (const key in this.columns) {
-        sums[key] = this.columns[key].sum();
-      }
-      return sums;
     }
+    const sums: Record<string, number> = {};
+    for (const key in this.columns) {
+      sums[key] = this.columns[key].sum();
+    }
+    return sums;
   }
 
   /**
@@ -173,13 +244,12 @@ export class DataFrame {
         throw new Error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].max();
-    } else {
-      const maxes: Record<string, number> = {};
-      for (const key in this.columns) {
-        maxes[key] = this.columns[key].max();
-      }
-      return maxes;
     }
+    const maxes: Record<string, number> = {};
+    for (const key in this.columns) {
+      maxes[key] = this.columns[key].max();
+    }
+    return maxes;
   }
 
   /**
@@ -195,13 +265,12 @@ export class DataFrame {
         throw new Error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].min();
-    } else {
-      const mins: Record<string, number> = {};
-      for (const key in this.columns) {
-        mins[key] = this.columns[key].min();
-      }
-      return mins;
     }
+    const mins: Record<string, number> = {};
+    for (const key in this.columns) {
+      mins[key] = this.columns[key].min();
+    }
+    return mins;
   }
 
   /**
@@ -217,13 +286,54 @@ export class DataFrame {
         throw new Error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].mean();
-    } else {
-      const means: Record<string, number> = {};
-      for (const key in this.columns) {
-        means[key] = this.columns[key].mean();
-      }
-      return means;
     }
+    const means: Record<string, number> = {};
+    for (const key in this.columns) {
+      means[key] = this.columns[key].mean();
+    }
+    return means;
+  }
+
+  /**
+   * Compute the median of a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes medians for all columns.
+   * @returns The median of the column if `k` is given, or an object mapping column → median otherwise.
+   * @throws If column does not exist.
+   */
+  median(k: string | null = null): number | Record<string, number> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].median();
+    }
+    const medians: Record<string, number> = {};
+    for (const key in this.columns) {
+      medians[key] = this.columns[key].median();
+    }
+    return medians;
+  }
+
+  /**
+   * Compute the mode of a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes modes for all columns.
+   * @returns The mode of the column if `k` is given, or an object mapping column → mode otherwise.
+   * @throws If column does not exist.
+   */
+  mode(k: string | null = null): number | null | Record<string, number | null> {
+    if (k) {
+      if (!(k in this.columns)) {
+        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].mode();
+    }
+    const modes: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      modes[key] = this.columns[key].mode();
+    }
+    return modes;
   }
 
   /**
