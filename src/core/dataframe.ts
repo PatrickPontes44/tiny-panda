@@ -157,7 +157,7 @@ export class DataFrame {
   describe(k: string | null = null): Record<string, any> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return { [k]: this.columns[k].describe() };
     } else {
@@ -180,7 +180,7 @@ export class DataFrame {
   unique(k: string): Record<string, Series> | Series {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].unique();
     }
@@ -199,7 +199,7 @@ export class DataFrame {
   valueCounts(k: string, desc: boolean = true): Record<string, Record<any, number>> | Record<any, number> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].valueCounts(desc);
     }
@@ -220,7 +220,7 @@ export class DataFrame {
   sum(k: string | null = null): number | Record<string, number> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].sum();
     }
@@ -241,7 +241,7 @@ export class DataFrame {
   max(k: string | null = null): number | Record<string, number> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].max();
     }
@@ -262,7 +262,7 @@ export class DataFrame {
   min(k: string | null = null): number | Record<string, number> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].min();
     }
@@ -283,7 +283,7 @@ export class DataFrame {
   mean(k: string | null = null): number | Record<string, number> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].mean();
     }
@@ -304,7 +304,7 @@ export class DataFrame {
   median(k: string | null = null): number | Record<string, number> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].median();
     }
@@ -325,7 +325,7 @@ export class DataFrame {
   mode(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].mode();
     }

@@ -106,7 +106,8 @@ export class Series {
    */
   sum(): number {
     if (!this.values.every(val => typeof val === 'number')) {
-      throw new Error("Sum not implemented for non-numeric values.");
+      console.error("Sum not implemented for non-numeric values.");
+      return NaN;
     }
     return this.values.reduce((acc, val) => acc + val, 0);
   }
@@ -118,7 +119,8 @@ export class Series {
   */
   max(): number {
     if (!this.values.every(val => typeof val === 'number')) {
-      throw new Error("Max not implemented for non-numeric values.");
+      console.error("Max not implemented for non-numeric values.");
+      return NaN;
     }
     return Math.max(...this.values);
   }
@@ -130,7 +132,8 @@ export class Series {
   */
   min(): number {
     if (!this.values.every(val => typeof val === 'number')) {
-      throw new Error("Min not implemented for non-numeric values.");
+      console.error("Min not implemented for non-numeric values.");
+      return NaN;
     }
     return Math.min(...this.values);
   }
@@ -142,7 +145,8 @@ export class Series {
    */
   mean(): number {
     if (!this.values.every(val => typeof val === 'number')) {
-      throw new Error("Mean not implemented for non-numeric values.");
+      console.error("Mean not implemented for non-numeric values.");
+      return NaN;
     }
     return this.sum() / this.values.length;
   }
@@ -153,7 +157,8 @@ export class Series {
    */
   median(): number {
     if (!this.values.every(val => typeof val === "number")) {
-      throw new Error("Median not implemented for non-numeric values.");
+      console.error("Median not implemented for non-numeric values.");
+      return NaN;
     }
     const sorted = [...this.values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
