@@ -32,6 +32,14 @@ export class Series {
   }
 
   /**
+   * Get the number of elements in the Series.
+   * @returns The length of the Series.
+  */
+  length(): number {
+    return this.values.length;
+  }
+
+  /**
    * Compute the sum of all numeric values in the Series.
    * @returns The sum of the Series values.
    * @throws Will throw if values are not numeric.
