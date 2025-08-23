@@ -228,9 +228,9 @@ export class DataFrame {
 
   /**
    * Convert the DataFrame to a string representation.
-   * @returns A table-like string with headers and rows.
+   * Pretty-print the DataFrame as a table with headers and rows.
   */
-  toTable(): string {
+  printTable() {
     const keys = Object.keys(this.columns);
     const colWidths: Record<string, number> = {};
     for (const k of keys) {
@@ -245,7 +245,7 @@ export class DataFrame {
     for (let i = 0; i < length; i++) {
       rows += keys.map(k => String(this.columns[k].values[i]).padEnd(colWidths[k], ' ')).join(' | ') + "\n";
     }
-    return rows;
+    console.log(rows);
   }
   
   /**
