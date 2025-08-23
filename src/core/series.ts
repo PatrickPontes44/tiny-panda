@@ -55,7 +55,7 @@ export class Series {
    * @returns An object containing max, min, sum, and mean of the Series values.
    * @throws Will throw if values are not numeric.
    */
-  describe(): { max: number, min: number, sum: number, mean: number, median: number, mode: any | null } {
+  describe(): { max: number | null, min: number | null, sum: number | null, mean: number | null, median: number | null, mode: any | null } {
     return {
       max: this.max(),
       min: this.min(),
@@ -104,10 +104,9 @@ export class Series {
    * @returns The sum of the Series values.
    * @throws Will throw if values are not numeric.
    */
-  sum(): number {
+  sum(): number | null {
     if (!this.values.every(val => typeof val === 'number')) {
-      console.error("Sum not implemented for non-numeric values.");
-      return NaN;
+      return null;
     }
     return this.values.reduce((acc, val) => acc + val, 0);
   }
@@ -117,10 +116,9 @@ export class Series {
    * @returns The maximum value in the Series.
    * @throws Will throw if values are not comparable.
   */
-  max(): number {
+  max(): number | null {
     if (!this.values.every(val => typeof val === 'number')) {
-      console.error("Max not implemented for non-numeric values.");
-      return NaN;
+      return null;
     }
     return Math.max(...this.values);
   }
@@ -130,10 +128,9 @@ export class Series {
    * @returns The minimum value in the Series.
    * @throws Will throw if values are not comparable.
   */
-  min(): number {
+  min(): number | null {
     if (!this.values.every(val => typeof val === 'number')) {
-      console.error("Min not implemented for non-numeric values.");
-      return NaN;
+      return null;
     }
     return Math.min(...this.values);
   }
@@ -143,22 +140,21 @@ export class Series {
    * @returns The mean of the Series values.
    * @throws Will throw if values are not numeric.
    */
-  mean(): number {
+  mean(): number | null {
     if (!this.values.every(val => typeof val === 'number')) {
-      console.error("Mean not implemented for non-numeric values.");
-      return NaN;
+      return null;
     }
-    return this.sum() / this.values.length;
+    const sum = this.sum();
+    return sum != null ? sum / this.values.length : null;
   }
 
   /**
    * Compute the median of all numeric values in the Series.
    * @returns The median of the Series values.
    */
-  median(): number {
+  median(): number | null {
     if (!this.values.every(val => typeof val === "number")) {
-      console.error("Median not implemented for non-numeric values.");
-      return NaN;
+      return null;
     }
     const sorted = [...this.values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);

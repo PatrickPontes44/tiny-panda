@@ -217,14 +217,14 @@ export class DataFrame {
    * @returns The mean of the column if `k` is given, or an object mapping column → sum otherwise.
    * @throws If column does not exist.
    */
-  sum(k: string | null = null): number | Record<string, number> {
+  sum(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
         console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].sum();
     }
-    const sums: Record<string, number> = {};
+    const sums: Record<string, number | null> = {};
     for (const key in this.columns) {
       sums[key] = this.columns[key].sum();
     }
@@ -238,14 +238,14 @@ export class DataFrame {
    * @returns The max of the column if `k` is given, or an object mapping column → max otherwise.
    * @throws If column does not exist.
   */
-  max(k: string | null = null): number | Record<string, number> {
+  max(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
         console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].max();
     }
-    const maxes: Record<string, number> = {};
+    const maxes: Record<string, number | null> = {};
     for (const key in this.columns) {
       maxes[key] = this.columns[key].max();
     }
@@ -259,14 +259,14 @@ export class DataFrame {
    * @returns The min of the column if `k` is given, or an object mapping column → min otherwise.
    * @throws If column does not exist.
   */
-  min(k: string | null = null): number | Record<string, number> {
+  min(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
         console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].min();
     }
-    const mins: Record<string, number> = {};
+    const mins: Record<string, number | null> = {};
     for (const key in this.columns) {
       mins[key] = this.columns[key].min();
     }
@@ -280,14 +280,14 @@ export class DataFrame {
    * @returns The mean of the column if `k` is given, or an object mapping column → mean otherwise.
    * @throws If column does not exist.
    */
-  mean(k: string | null = null): number | Record<string, number> {
+  mean(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
         console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].mean();
     }
-    const means: Record<string, number> = {};
+    const means: Record<string, number | null> = {};
     for (const key in this.columns) {
       means[key] = this.columns[key].mean();
     }
@@ -301,14 +301,14 @@ export class DataFrame {
    * @returns The median of the column if `k` is given, or an object mapping column → median otherwise.
    * @throws If column does not exist.
    */
-  median(k: string | null = null): number | Record<string, number> {
+  median(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
         console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].median();
     }
-    const medians: Record<string, number> = {};
+    const medians: Record<string, number | null> = {};
     for (const key in this.columns) {
       medians[key] = this.columns[key].median();
     }
