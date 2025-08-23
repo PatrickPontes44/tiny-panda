@@ -39,6 +39,24 @@ export class Series {
     return this.values.length;
   }
 
+  /** Estimate memory usage of the Series */
+  estimatedMemoryUsage(): string {
+    let totalBytes = 0;
+    for (const val of this.values) {
+      if (typeof val === "number") {
+        totalBytes += 8;
+      } else if (typeof val === "string") {
+        totalBytes += val.length * 2;
+      } else if (val === null || val === undefined) {
+        totalBytes += 0;
+      } else {
+        totalBytes += 8;
+      }
+    }
+
+    return `${(totalBytes / 1024).toFixed(2)} KB`;
+  }
+
   /**
    * Get basic information about the Series.
    * @returns An object containing length, type of values, and estimated memory usage.
@@ -46,7 +64,7 @@ export class Series {
   info(): { length: number; type: string; estimatedMemoryUsage: string } {
     const length = this.length();
     const type = length > 0 ? typeof this.values[0] : 'undefined';
-    const estimatedMemoryUsage = `${(length * 8) / 1024} KB`;
+    const estimatedMemoryUsage = this.estimatedMemoryUsage();
     return { length, type, estimatedMemoryUsage };
   }
 
@@ -120,7 +138,12 @@ export class Series {
     if (!this.values.every(val => typeof val === 'number')) {
       return null;
     }
-    return Math.max(...this.values);
+
+    let maxVal = -Infinity;
+    for (const val of this.values) {
+      if (val > maxVal) maxVal = val;
+    }
+    return maxVal;
   }
 
   /**
@@ -132,7 +155,12 @@ export class Series {
     if (!this.values.every(val => typeof val === 'number')) {
       return null;
     }
-    return Math.min(...this.values);
+    
+    let minVal = Infinity;
+    for (const val of this.values) {
+      if (val < minVal) minVal = val;
+    }
+    return minVal;
   }
 
   /**

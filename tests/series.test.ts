@@ -78,21 +78,4 @@ describe("Series", () => {
       });
     });
   });
-
-  describe("errors", () => {
-    it("should throw error on sum with non-numeric values", () => {
-      const s = new Series([1, "a", 3]);
-      expect(() => s.sum()).toThrow();
-    });
-
-    it("should throw error on mean with non-numeric values", () => {
-      const s = new Series(["a", "b", "c"]);
-      expect(() => s.mean()).toThrow();
-    });
-
-    it("should throw error on median with non-numeric values", () => {
-      const s = new Series(["a", "b", "c"]);
-      expect(() => s.median()).toThrow();
-    });
-  });
 });

@@ -138,6 +138,28 @@ export class DataFrame {
     return [numRows, numCols];
   }
 
+    /** Estimate memory usage of the DataFrame */
+  estimatedMemoryUsage(): string {
+    let totalBytes = 0;
+
+    for (const colName in this.columns) {
+      const series = this.columns[colName];
+      for (const val of series.values) {
+        if (typeof val === "number") {
+          totalBytes += 8;
+        } else if (typeof val === "string") {
+          totalBytes += val.length * 2;
+        } else if (val === null || val === undefined) {
+          totalBytes += 0;
+        } else {
+          totalBytes += 8;
+        }
+      }
+    }
+
+    return `${(totalBytes / 1024).toFixed(2)} KB`;
+  }
+
   /**
    * Get basic information about the DataFrame.
    * @returns An object containing number of rows, columns, column names, and estimated memory usage.
@@ -146,7 +168,7 @@ export class DataFrame {
     const rows = this.length();
     const columns = this.numColumns();
     const columnNames = this.columnNames();
-    const estimatedMemoryUsage = `${(rows * columns * 8) / 1024} KB`;
+    const estimatedMemoryUsage = this.estimatedMemoryUsage();
     return { rows, columns, columnNames, estimatedMemoryUsage };
   }
 
@@ -338,9 +360,10 @@ export class DataFrame {
 
   /**
    * Convert the DataFrame to a string representation.
+   * @param num_rows - Number of rows to be displayed. If null, computes all rows.
    * Pretty-print the DataFrame as a table with headers and rows.
   */
-  printTable() {
+  printTable(num_rows: number | null = null): void {
     const keys = Object.keys(this.columns);
     const colWidths: Record<string, number> = {};
     for (const k of keys) {
@@ -351,7 +374,7 @@ export class DataFrame {
     let rows: string = '';
     rows += keys.map(k => k.padEnd(colWidths[k], ' ')).join(' | ') + "\n";
     rows += keys.map(k => '-'.repeat(colWidths[k])).join('-|-') + "\n";
-    const length = this.columns[keys[0]].values.length;
+    const length = num_rows ? num_rows : this.columns[keys[0]].values.length;
     for (let i = 0; i < length; i++) {
       rows += keys.map(k => String(this.columns[k].values[i]).padEnd(colWidths[k], ' ')).join(' | ') + "\n";
     }
