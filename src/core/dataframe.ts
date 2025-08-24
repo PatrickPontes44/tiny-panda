@@ -7,6 +7,7 @@ import { Series } from "./series";
 export class DataFrame {
   /** Mapping of column names to Series */
   columns: Record<string, Series>;
+  #originalData: Record<string, any[]> | Array<Record<string, any>>;
 
   /**
    * Create a new DataFrame from an array of objects or an object of arrays.
@@ -25,6 +26,7 @@ export class DataFrame {
    */
   constructor(data: Record<string, any[]> | Array<Record<string, any>>) {
     this.columns = {};
+    this.#originalData = data;
 
     if (Array.isArray(data)) {
       // Case 1: array of objects
@@ -47,6 +49,17 @@ export class DataFrame {
       for (const key of keys) {
         this.columns[key] = new Series(data.map(row => row[key]));
       }
+
+      return new Proxy(this, {
+        get: (target: DataFrame, prop: string | symbol, receiver: any) => {
+          if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
+          if (typeof prop === "string" && prop in target.columns) return target.columns[prop];
+          return undefined;
+        },
+        set: () => {
+          throw new Error("Direct assignment to Dataframe value is not allowed.");
+        }
+      });
     } 
     else if (typeof data === "object" && data !== null) {
       // Case 2: object of arrays
@@ -68,6 +81,16 @@ export class DataFrame {
       for (const key of keys) {
         this.columns[key] = new Series(data[key]);
       }
+      return new Proxy(this, {
+        get: (target: DataFrame, prop: string | symbol, receiver: any) => {
+          if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
+          if (typeof prop === "string" && prop in target.columns) return target.columns[prop];
+          return undefined;
+        },
+        set: () => {
+          throw new Error("Direct assignment to Dataframe value is not allowed.");
+        }
+      });
     } 
     else {
       throw new Error("DataFrame constructor: expected array of objects or object of arrays.");
@@ -138,6 +161,100 @@ export class DataFrame {
     return [numRows, numCols];
   }
 
+    /** Estimate memory usage of the DataFrame */
+  estimatedMemoryUsage(): string {
+    let totalBytes = 0;
+
+    for (const colName in this.columns) {
+      const series = this.columns[colName];
+      for (const val of series.values) {
+        if (typeof val === "number") {
+          totalBytes += 8;
+        } else if (typeof val === "string") {
+          totalBytes += val.length * 2;
+        } else if (val === null || val === undefined) {
+          totalBytes += 0;
+        } else {
+          totalBytes += 8;
+        }
+      }
+    }
+
+    return `${(totalBytes / 1024).toFixed(2)} KB`;
+  }
+
+  /**
+   * Get basic information about the DataFrame.
+   * @returns An object containing number of rows, columns, column names, and estimated memory usage.
+  */
+  info(): { rows: number; columns: number; columnNames: string[]; estimatedMemoryUsage: string } {
+    const rows = this.length();
+    const columns = this.numColumns();
+    const columnNames = this.columnNames();
+    const estimatedMemoryUsage = this.estimatedMemoryUsage();
+    return { rows, columns, columnNames, estimatedMemoryUsage };
+  }
+
+  /**
+   * Get descriptive statistics for all numeric columns in the DataFrame.
+   * @returns An object mapping column names to their descriptive statistics.
+   */
+  describe(k: string | null = null): Record<string, any> {
+    if (k) {
+      if (!(k in this.columns)) {
+        console.error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return { [k]: this.columns[k].describe() };
+    } else {
+      return {
+        max: this.max(),
+        min: this.min(),
+        sum: this.sum(),
+        mean: this.mean(),
+        median: this.median(),
+        mode: this.mode(),
+      };
+    }
+  }
+
+  /**
+   * @param k - Column name. If null, compute the uniques for all columns.
+   * @returns The unique values of the column if `k` is given, or an object mapping column → unique otherwise.
+   * @throws If column does not exist.
+   */
+  unique(k: string): Record<string, Series> | Series {
+    if (k) {
+      if (!(k in this.columns)) {
+        console.error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].unique();
+    }
+    const result: Record<string, Series> = {};
+    for (const col in this.columns) {
+      result[col] = this.columns[col].unique();
+    }
+    return result;
+  }
+
+  /**
+   * @param k - Column name. If null, compute the valueCounts for all columns.
+   * @param desc - whether to sort descending (default true)
+   * @returns The value counts of the column if `k` is given, or an object mapping column → counts otherwise.
+   */
+  valueCounts(k: string, desc: boolean = true): Record<string, Record<any, number>> | Record<any, number> {
+    if (k) {
+      if (!(k in this.columns)) {
+        console.error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].valueCounts(desc);
+    }
+    const result: Record<string, Record<any, number>> = {};
+    for (const col in this.columns) {
+      result[col] = this.columns[col].valueCounts(desc);
+    }
+    return result;
+  }
+
   /**
    * Compute the sum of a specific column, or of all numeric columns.
    *
@@ -145,19 +262,18 @@ export class DataFrame {
    * @returns The mean of the column if `k` is given, or an object mapping column → sum otherwise.
    * @throws If column does not exist.
    */
-  sum(k: string | null = null): number | Record<string, number> {
+  sum(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].sum();
-    } else {
-      const sums: Record<string, number> = {};
-      for (const key in this.columns) {
-        sums[key] = this.columns[key].sum();
-      }
-      return sums;
     }
+    const sums: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      sums[key] = this.columns[key].sum();
+    }
+    return sums;
   }
 
   /**
@@ -167,19 +283,18 @@ export class DataFrame {
    * @returns The max of the column if `k` is given, or an object mapping column → max otherwise.
    * @throws If column does not exist.
   */
-  max(k: string | null = null): number | Record<string, number> {
+  max(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].max();
-    } else {
-      const maxes: Record<string, number> = {};
-      for (const key in this.columns) {
-        maxes[key] = this.columns[key].max();
-      }
-      return maxes;
     }
+    const maxes: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      maxes[key] = this.columns[key].max();
+    }
+    return maxes;
   }
 
   /**
@@ -189,19 +304,18 @@ export class DataFrame {
    * @returns The min of the column if `k` is given, or an object mapping column → min otherwise.
    * @throws If column does not exist.
   */
-  min(k: string | null = null): number | Record<string, number> {
+  min(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].min();
-    } else {
-      const mins: Record<string, number> = {};
-      for (const key in this.columns) {
-        mins[key] = this.columns[key].min();
-      }
-      return mins;
     }
+    const mins: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      mins[key] = this.columns[key].min();
+    }
+    return mins;
   }
 
   /**
@@ -211,26 +325,106 @@ export class DataFrame {
    * @returns The mean of the column if `k` is given, or an object mapping column → mean otherwise.
    * @throws If column does not exist.
    */
-  mean(k: string | null = null): number | Record<string, number> {
+  mean(k: string | null = null): number | null | Record<string, number | null> {
     if (k) {
       if (!(k in this.columns)) {
-        throw new Error(`Column "${k}" does not exist in DataFrame.`);
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
       return this.columns[k].mean();
-    } else {
-      const means: Record<string, number> = {};
-      for (const key in this.columns) {
-        means[key] = this.columns[key].mean();
+    }
+    const means: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      means[key] = this.columns[key].mean();
+    }
+    return means;
+  }
+
+  /**
+   * Compute the median of a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes medians for all columns.
+   * @returns The median of the column if `k` is given, or an object mapping column → median otherwise.
+   * @throws If column does not exist.
+   */
+  median(k: string | null = null): number | null | Record<string, number | null> {
+    if (k) {
+      if (!(k in this.columns)) {
+        console.error(`Column "${k}" does not exist in DataFrame.`);
       }
-      return means;
+      return this.columns[k].median();
+    }
+    const medians: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      medians[key] = this.columns[key].median();
+    }
+    return medians;
+  }
+
+  /**
+   * Compute the mode of a specific column, or of all numeric columns.
+   *
+   * @param k - Column name. If null, computes modes for all columns.
+   * @returns The mode of the column if `k` is given, or an object mapping column → mode otherwise.
+   * @throws If column does not exist.
+   */
+  mode(k: string | null = null): number | null | Record<string, number | null> {
+    if (k) {
+      if (!(k in this.columns)) {
+        console.error(`Column "${k}" does not exist in DataFrame.`);
+      }
+      return this.columns[k].mode();
+    }
+    const modes: Record<string, number | null> = {};
+    for (const key in this.columns) {
+      modes[key] = this.columns[key].mode();
+    }
+    return modes;
+  }
+
+  /**
+   * Positional indexing to get value(s) by row and column indices.
+   * @param rowIndex - The row index (0-based).
+   * @param colIndex - The column index (0-based). If null, returns the entire row as an object.
+   * @returns The value at the specified position, or the entire row as an object if `colIndex` is null.
+   * @throws If indices are out of bounds.
+  */
+  iloc(rowIndex: number, colIndex: number | null = null): any {
+    if (colIndex === null) {
+      const row: Record<string, any> = {};
+      for (const col in this.columns) {
+        row[col] = this.columns[col].values[rowIndex];
+      }
+      return row;
+    } else {
+      const colName = Object.keys(this.columns)[colIndex];
+      return this.columns[colName].values[rowIndex];
     }
   }
 
   /**
+   * Label-based indexing to get value(s) by row index and column name.
+   * @param rowIndex - The row index (0-based).
+   * @param colName - The column name.
+   * @returns The value at the specified position.
+   * @throws If indices are out of bounds or column does not exist.
+  */
+  loc(rowIndex: number, colName: string): any {
+    const numRows = this.length();
+    if (rowIndex < 0 || rowIndex >= numRows) {
+      throw new Error(`Row index ${rowIndex} out of range`);
+    }
+    if (!this.columnNames().includes(colName)) {
+      throw new Error(`Column "${colName}" does not exist`);
+    }
+    return this.columns[colName].values[rowIndex];
+  }
+
+  /**
    * Convert the DataFrame to a string representation.
+   * @param num_rows - Number of rows to be displayed. If null, computes all rows.
    * Pretty-print the DataFrame as a table with headers and rows.
   */
-  printTable() {
+  printTable(num_rows: number | null = null): void {
     const keys = Object.keys(this.columns);
     const colWidths: Record<string, number> = {};
     for (const k of keys) {
@@ -241,7 +435,7 @@ export class DataFrame {
     let rows: string = '';
     rows += keys.map(k => k.padEnd(colWidths[k], ' ')).join(' | ') + "\n";
     rows += keys.map(k => '-'.repeat(colWidths[k])).join('-|-') + "\n";
-    const length = this.columns[keys[0]].values.length;
+    const length = num_rows ? num_rows : this.columns[keys[0]].values.length;
     for (let i = 0; i < length; i++) {
       rows += keys.map(k => String(this.columns[k].values[i]).padEnd(colWidths[k], ' ')).join(' | ') + "\n";
     }
@@ -252,6 +446,6 @@ export class DataFrame {
    * Pretty-print the DataFrame using `console.table`.
   */
   print(): void {
-    console.table(this.columns);
+    console.table(this.#originalData);
   }
 }
