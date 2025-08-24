@@ -7,6 +7,7 @@ import { Series } from "./series";
 export class DataFrame {
   /** Mapping of column names to Series */
   columns: Record<string, Series>;
+  #originalData: Record<string, any[]> | Array<Record<string, any>>;
 
   /**
    * Create a new DataFrame from an array of objects or an object of arrays.
@@ -25,6 +26,7 @@ export class DataFrame {
    */
   constructor(data: Record<string, any[]> | Array<Record<string, any>>) {
     this.columns = {};
+    this.#originalData = data;
 
     if (Array.isArray(data)) {
       // Case 1: array of objects
@@ -47,6 +49,17 @@ export class DataFrame {
       for (const key of keys) {
         this.columns[key] = new Series(data.map(row => row[key]));
       }
+
+      return new Proxy(this, {
+        get: (target: DataFrame, prop: string | symbol, receiver: any) => {
+          if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
+          if (typeof prop === "string" && prop in target.columns) return target.columns[prop];
+          return undefined;
+        },
+        set: () => {
+          throw new Error("Direct assignment to Dataframe value is not allowed.");
+        }
+      });
     } 
     else if (typeof data === "object" && data !== null) {
       // Case 2: object of arrays
@@ -68,6 +81,16 @@ export class DataFrame {
       for (const key of keys) {
         this.columns[key] = new Series(data[key]);
       }
+      return new Proxy(this, {
+        get: (target: DataFrame, prop: string | symbol, receiver: any) => {
+          if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
+          if (typeof prop === "string" && prop in target.columns) return target.columns[prop];
+          return undefined;
+        },
+        set: () => {
+          throw new Error("Direct assignment to Dataframe value is not allowed.");
+        }
+      });
     } 
     else {
       throw new Error("DataFrame constructor: expected array of objects or object of arrays.");
@@ -359,6 +382,44 @@ export class DataFrame {
   }
 
   /**
+   * Positional indexing to get value(s) by row and column indices.
+   * @param rowIndex - The row index (0-based).
+   * @param colIndex - The column index (0-based). If null, returns the entire row as an object.
+   * @returns The value at the specified position, or the entire row as an object if `colIndex` is null.
+   * @throws If indices are out of bounds.
+  */
+  iloc(rowIndex: number, colIndex: number | null = null): any {
+    if (colIndex === null) {
+      const row: Record<string, any> = {};
+      for (const col in this.columns) {
+        row[col] = this.columns[col].values[rowIndex];
+      }
+      return row;
+    } else {
+      const colName = Object.keys(this.columns)[colIndex];
+      return this.columns[colName].values[rowIndex];
+    }
+  }
+
+  /**
+   * Label-based indexing to get value(s) by row index and column name.
+   * @param rowIndex - The row index (0-based).
+   * @param colName - The column name.
+   * @returns The value at the specified position.
+   * @throws If indices are out of bounds or column does not exist.
+  */
+  loc(rowIndex: number, colName: string): any {
+    const numRows = this.length();
+    if (rowIndex < 0 || rowIndex >= numRows) {
+      throw new Error(`Row index ${rowIndex} out of range`);
+    }
+    if (!this.columnNames().includes(colName)) {
+      throw new Error(`Column "${colName}" does not exist`);
+    }
+    return this.columns[colName].values[rowIndex];
+  }
+
+  /**
    * Convert the DataFrame to a string representation.
    * @param num_rows - Number of rows to be displayed. If null, computes all rows.
    * Pretty-print the DataFrame as a table with headers and rows.
@@ -385,6 +446,6 @@ export class DataFrame {
    * Pretty-print the DataFrame using `console.table`.
   */
   print(): void {
-    console.table(this.columns);
+    console.table(this.#originalData);
   }
 }
