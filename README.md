@@ -58,8 +58,6 @@ console.log(df_from_arr.mean());
 
 #### Soon (Next Level Features)
 
-iloc(rowIndex, colIndex) → positional selection of values.
-
 apply(func) → apply a function to column(s) or row(s).
 
 #### Future / Advanced Features

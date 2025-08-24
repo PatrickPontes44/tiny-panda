@@ -11,6 +11,20 @@ export class Series {
    */
   constructor(values: any[]) {
     this.values = values;
+    return new Proxy(this, {
+      get: (target, prop) => {
+        if (prop in target) return Reflect.get(target, prop);
+
+        if (typeof prop === "string" && !isNaN(Number(prop))) {
+          return target.values[Number(prop)];
+        }
+
+        return undefined;
+      },
+      set: () => {
+        throw new Error("Direct assignment to Series values is not allowed.");
+      }
+    });
   }
 
   /**
