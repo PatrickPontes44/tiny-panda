@@ -1,6 +1,6 @@
 {
   "name": "tiny-panda",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "tiny-panda is a lightweight JavaScript library inspired by Python’s pandas. It provides a simple, intuitive API for working with tabular data in the browser or Node.js.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
