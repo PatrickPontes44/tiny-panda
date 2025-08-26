@@ -448,4 +448,33 @@ export class DataFrame {
   print(): void {
     console.table(this.#originalData);
   }
+
+  /**
+   * Apply a function along an axis of the DataFrame.
+   * @param func - The function to apply. It receives a Series and its label (column name or row index).
+   * @param axis - The axis to apply the function on: 0 for columns, 1 for rows (default: 0).
+   * @returns An object mapping column/row labels to the results of the function.
+   */
+  apply(func: (series: Series, label: string | number) => any, axis: 0 | 1 = 0): Record<string, any> | any {
+    if (axis === 0) {
+      const result: Record<string, any> = {};
+      for (const key of Object.keys(this.columns)) {
+        result[key] = func(this.columns[key], key);
+      }
+      return result;
+    } else {
+      const numRows = this.length();
+      const keys = Object.keys(this.columns);
+      const result: any[] = [];
+      for (let i = 0; i < numRows; i++) {
+        const rowData: any[] = [];
+        for (const key of keys) {
+          rowData.push(this.columns[key].values[i]);
+        }
+        const rowSeries = new Series(rowData);
+        result.push(func(rowSeries, i));
+      }
+      return result;
+    }
+  }
 }

@@ -146,4 +146,35 @@ describe("DataFrame", () => {
         expect(uniques.values).toEqual(["foo", "bar", "baz"]);
     });
   });
+
+  describe("apply()", () => {
+    const df = new DataFrame({
+      A: [1, 2, 3],
+      B: [10, 20, 30],
+      C: [100, 200, 300],
+    });
+
+    it("should apply a function to each column (axis=0)", () => {
+      const result = df.apply((series) => series.sum());
+      expect(result).toEqual({ A: 6, B: 60, C: 600 });
+    });
+
+    it("should apply a function to each row (axis=1)", () => {
+      const result = df.apply((series) => series.sum(), 1);
+      expect(result).toEqual([111, 222, 333]);
+    });
+
+    it("should handle functions that return different types (axis=0)", () => {
+      const result = df.apply((series, label) => `${label}:${series.mean()}`);
+      expect(result).toEqual({ A: "A:2", B: "B:20", C: "C:200" });
+    });
+
+    it("should not modify the original DataFrame", () => {
+      const originalData = { A: [1], B: [2] };
+      const dfToTest = new DataFrame(originalData);
+      dfToTest.apply((series) => series.sum());
+      expect(dfToTest.columns['A'].values).toEqual(originalData.A);
+      expect(dfToTest.columns['B'].values).toEqual(originalData.B);
+    });
+  });
 });
