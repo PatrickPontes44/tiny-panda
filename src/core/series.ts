@@ -229,4 +229,14 @@ export class Series {
     }
     return mode;
   }
+  /**
+   * Apply a function to each element in the Series and return a new Series with the results.
+   * @param func - A function that takes a value and returns a transformed value.
+   * @returns A new Series with the transformed values.
+  */
+  apply(func: (val: any) => any): Series {
+    const newValues = this.values.map(func);
+    return new Series(newValues);
+  }
 }
+

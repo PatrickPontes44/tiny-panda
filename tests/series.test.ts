@@ -154,4 +154,39 @@ describe("Series", () => {
        expect(Object.keys(counts)).toEqual(["c", "b", "a"]);
     });
   });
+
+  describe("apply()", () => {
+    it("should apply a numeric function to each element", () => {
+      const s = new Series([1, 2, 3, 4]);
+      const newSeries = s.apply((val) => val * val);
+      expect(newSeries).toBeInstanceOf(Series);
+      expect(newSeries.values).toEqual([1, 4, 9, 16]);
+    });
+
+    it("should apply a string function to each element", () => {
+      const s = new Series(["hello", "world"]);
+      const newSeries = s.apply((val) => val.toUpperCase());
+      expect(newSeries.values).toEqual(["HELLO", "WORLD"]);
+    });
+
+    it("should handle functions that change the element type", () => {
+      const s = new Series([1, 2, 3]);
+      const newSeries = s.apply((val) => `ID-${val}`);
+      expect(newSeries.values).toEqual(["ID-1", "ID-2", "ID-3"]);
+    });
+
+    it("should return an empty Series when applied to an empty Series", () => {
+      const s = new Series([]);
+      const newSeries = s.apply((val) => val * 2);
+      expect(newSeries.values).toEqual([]);
+      expect(newSeries.length()).toBe(0);
+    });
+
+    it("should not modify the original Series", () => {
+      const originalValues = [10, 20, 30];
+      const s = new Series(originalValues);
+      s.apply((val) => val / 10);
+      expect(s.values).toEqual(originalValues);
+    });
+  });
 });
