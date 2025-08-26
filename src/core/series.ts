@@ -183,6 +183,9 @@ export class Series {
    * @throws Will throw if values are not numeric.
    */
   mean(): number | null {
+    if(this.values.length === 0) {
+      return null;
+    }
     if (!this.values.every(val => typeof val === 'number')) {
       return null;
     }
