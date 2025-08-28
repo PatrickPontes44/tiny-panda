@@ -1,6 +1,6 @@
 {
   "name": "tiny-panda",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "tiny-panda is a lightweight JavaScript library inspired by Python’s pandas. It provides a simple, intuitive API for working with tabular data in the browser or Node.js.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -21,7 +21,7 @@
     "type": "git",
     "url": "git+https://github.com/PatrickPontes44/tiny-panda.git"
   },
-  "keywords": [],
+  "keywords": ["data-science", "machine-learning", "statistics", "typescript", "pandas-dataframe", "pandas"],
   "author": "",
   "license": "MIT",
   "bugs": {
